@@ -1,0 +1,192 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "A basic gauge chart example.",
+  "width": 600,
+  "height": 500,
+  "autosize": "none",
+  "data": [],
+  "signals": [
+    {"name": "currVal", "update": "30"},
+    {"name": "target", "update": "80"},
+    {"name": "arcMinVal", "update": "0"},
+    {"name": "arcMaxVal", "update": "100"},
+    {"name": "startAngle", "update": "-PI / 2"},
+    {"name": "endAngle", "update": "PI / 2"},
+    {"name": "backgroundfillColor", "value": "#77A7FB"},
+    {"name": "fillerColorToCurrVal", "value": "#89CFF0"},
+    {"name": "TargetTextTheta", "update": "scale('angleScale', target)"},
+    {
+      "name": "targetTextX",
+      "update": "centerX + (outerRadius + 40) * sin(TargetTextTheta)"
+    },
+    {
+      "name": "targetTextY",
+      "update": "centerY - (outerRadius + 40) * cos(TargetTextTheta)"
+    },
+    {"name": "StartTextTheta", "update": "scale('angleScale', arcMinVal)"},
+    {"name": "EndTextTheta", "update": "scale('angleScale', arcMaxVal)"},
+    {
+      "name": "MinTextX",
+      "update": "centerX + (innerRadius + (outerRadius - innerRadius) / 2) * sin(StartTextTheta)"
+    },
+    {"name": "MinTextY", "update": "centerY + 40"},
+    {
+      "name": "MaxTextX",
+      "update": "centerX + (innerRadius + (outerRadius - innerRadius) / 2) * sin(EndTextTheta)"
+    },
+    {"name": "MaxTextY", "update": "centerY + 40"},
+    {"name": "cornerR", "update": "(outerRadius - innerRadius) * 0.45"},
+    {"name": "capSpan", "update": "(cornerR / outerRadius) * 2"},
+    {"name": "valueEnd", "update": "scale('angleScale', clampedVal)"},
+    {"name": "isFull", "update": "clampedVal >= arcMaxVal"},
+    {"name": "capEnd", "update": "min(valueEnd, startAngle + capSpan)"},
+    {"name": "mainStart", "update": "isFull ? startAngle : capEnd"},
+    {"name": "radiusRef", "update": "min(width/2, height/2)"},
+    {"name": "outerRadius", "update": "radiusRef * 0.95"},
+    {"name": "innerRadius", "update": "outerRadius - (radiusRef * 0.25)"},
+    {"name": "theta", "update": "scale('angleScale', currVal)"},
+    {"name": "centerX", "update": "width/2"},
+    {"name": "centerY", "update": "height/2 + outerRadius/2"},
+    {"name": "clampedVal", "update": "min(max(arcMinVal, currVal), arcMaxVal)"},
+    {"name": "needleAngleRaw", "update": "scale('angleScale', clampedVal)"},
+    {"name": "needleAngle", "update": "needleAngleRaw - PI/2"},
+    {"name": "needleLength", "update": "innerRadius"},
+    {
+      "name": "needleTipX",
+      "update": "centerX + needleLength * cos(needleAngle)"
+    },
+    {
+      "name": "needleTipY",
+      "update": "centerY + needleLength * sin(needleAngle)"
+    }
+  ],
+  "scales": [
+    {
+      "name": "angleScale",
+      "type": "linear",
+      "domain": [{"signal": "arcMinVal"}, {"signal": "arcMaxVal"}],
+      "range": [{"signal": "startAngle"}, {"signal": "endAngle"}],
+      "clamp": true
+    }
+  ],
+  "marks": [
+    {
+      "type": "arc",
+      "as": "Background Arc (Round Edge)",
+      "encode": {
+        "enter": {
+          "x": {"signal": "centerX"},
+          "y": {"signal": "centerY"},
+          "innerRadius": {"signal": "innerRadius"},
+          "outerRadius": {"signal": "outerRadius"},
+          "startAngle": {"signal": "startAngle"},
+          "endAngle": {"signal": "endAngle"},
+          "cornerRadius": {"signal": "cornerR"},
+          "fill": {"value": "#eee"},
+          "stroke": {"value": "#999"}
+        }
+      }
+    },
+    {
+      "type": "arc",
+      "as": "Background Arc (Straight Edge)",
+      "encode": {
+        "enter": {
+          "x": {"signal": "centerX"},
+          "y": {"signal": "centerY"},
+          "innerRadius": {"signal": "innerRadius"},
+          "outerRadius": {"signal": "outerRadius"},
+          "startAngle": {"signal": "startAngle + PI/15"},
+          "endAngle": {"signal": "endAngle"},
+          "fill": {"value": "#eee"},
+          "stroke": {"value": "#999"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "as": "Max Val Text",
+      "encode": {
+        "enter": {
+          "x": {"signal": "MaxTextX"},
+          "y": {"signal": "MaxTextY"},
+          "text": {"signal": "format(arcMaxVal, '.0f')"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fontSize": {"value": 40},
+          "fill": {"value": "#333"},
+          "fontWeight": {"value": "bold"}
+        },
+        "update": {"endAngle": {"signal": "scale('angleScale', arcMaxVal)"}}
+      }
+    },
+    {
+      "type": "text",
+      "as": "Target Val Text",
+      "encode": {
+        "enter": {
+          "x": {"signal": "targetTextX"},
+          "y": {"signal": "targetTextY"},
+          "text": {"signal": "format(target, '.0f')"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fontSize": {"value": 40},
+          "fontWeight": {"value": "bold"},
+          "fill": {"value": "#333"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "as": "Min Val Text",
+      "encode": {
+        "enter": {
+          "x": {"signal": "MinTextX"},
+          "y": {"signal": "MinTextY"},
+          "text": {"signal": "format(arcMinVal, '.0f')"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fontSize": {"value": 40},
+          "fontWeight": {"value": "bold"},
+          "fill": {"value": "#333"}
+        }
+      }
+    },
+    {
+      "type": "arc",
+      "as": "Filler Arc",
+      "encode": {
+        "enter": {
+          "x": {"signal": "centerX"},
+          "y": {"signal": "centerY"},
+          "innerRadius": {"signal": "innerRadius"},
+          "outerRadius": {"signal": "outerRadius"},
+          "startAngle": {"signal": "startAngle"},
+          "endAngle": {"signal": "endAngle"},
+          "fill": {"signal": "fillerColorToCurrVal"}
+        },
+        "update": {
+          "endAngle": {"signal": "scale('angleScale', clampedVal)"},
+          "cornerRadius": {"signal": "!isFull ? cornerR : 0"}
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "encode": {
+        "enter": {
+          "stroke": {"value": "#333"},
+          "strokeWidth": {"value": 3},
+          "strokeCap": {"value": "round"}
+        },
+        "update": {
+          "x": {"signal": "centerX"},
+          "y": {"signal": "centerY"},
+          "x2": {"signal": "needleTipX"},
+          "y2": {"signal": "needleTipY"}
+        }
+      }
+    }
+  ],
+  "config": {}
+}
